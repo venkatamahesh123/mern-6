@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyLeaveApp</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+    nav {
+      background-color: #2c2c2c;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      color: #fff;
+      margin: 0;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    nav ul li {
+      margin: 0 10px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .date-list div {
+      background-color: #eee;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .request-box {
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+    .btn-approve, .btn-decline {
+      width: auto;
+      margin-right: 10px;
+    }
+    .btn-approve {
+      background-color: #28a745;
+    }
+    .btn-decline {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>MyLeaveApp</h1>
+    <ul>
+      <li><a href="#" onclick="showSection('register')">Register</a></li>
+      <li><a href="#" onclick="showSection('login')">Login</a></li>
+      <li><a href="#" onclick="showSection('leave-form')">Leave Form</a></li>
+      <li><a href="#" onclick="showSection('requests')">Requests</a></li>
+    </ul>
+  </nav>
+
+  <div class="container" id="register">
+    <h2>Register</h2>
+    <input type="text" placeholder="Username">
+    <input type="email" placeholder="Email">
+    <input type="password" placeholder="Password">
+    <label><input type="radio" name="role" value="faculty"> Faculty</label>
+    <label><input type="radio" name="role" value="student" checked> Student</label>
+    <button>Register</button>
+  </div>
+
+  <div class="container" id="login" style="display:none">
+    <h2>Login</h2>
+    <input type="email" placeholder="Email">
+    <input type="password" placeholder="Password">
+    <button>Login</button>
+  </div>
+
+  <div class="container" id="leave-form" style="display:none">
+    <h2>Leave Application</h2>
+    <input type="text" id="reason" placeholder="Reason">
+    <input type="date" id="leave-date">
+    <button onclick="addDate()">Add Date</button>
+    <div class="date-list" id="date-list"></div>
+    <button onclick="submitLeave()">Submit Leave Application</button>
+  </div>
+
+  <div class="container" id="requests" style="display:none">
+    <h2>Leave Requests</h2>
+    <div id="request-list"></div>
+  </div>
+
+  <script>
+    let leaveDates = [];
+    let requests = [];
+
+    function showSection(sectionId) {
+      document.querySelectorAll('.container').forEach(div => {
+        div.style.display = 'none';
+      });
+      document.getElementById(sectionId).style.display = 'block';
+      if (sectionId === 'requests') {
+        renderRequests();
+      }
+    }
+
+    function addDate() {
+      const dateInput = document.getElementById('leave-date');
+      if (dateInput.value && !leaveDates.includes(dateInput.value)) {
+        leaveDates.push(dateInput.value);
+        renderDates();
+        dateInput.value = '';
+      }
+    }
+
+    function renderDates() {
+      const list = document.getElementById('date-list');
+      list.innerHTML = '';
+      leaveDates.forEach(date => {
+        const div = document.createElement('div');
+        div.textContent = date;
+        list.appendChild(div);
+      });
+    }
+
+    function submitLeave() {
+      const reason = document.getElementById('reason').value;
+      if (!reason || leaveDates.length === 0) {
+        alert("Please fill all fields.");
+        return;
+      }
+      requests.push({ name: "Elite", dates: [...leaveDates], reason: reason, status: "Pending" });
+      leaveDates = [];
+      document.getElementById('reason').value = '';
+      renderDates();
+      alert("Leave Submitted");
+    }
+
+    function renderRequests() {
+      const container = document.getElementById('request-list');
+      container.innerHTML = '';
+      requests.forEach((req, index) => {
+        const box = document.createElement('div');
+        box.className = 'request-box';
+        box.innerHTML = `
+          <strong>${req.name}</strong> requested leave for:
+          <ul>${req.dates.map(d => `<li>${d}</li>`).join('')}</ul>
+          <p>Reason: ${req.reason}</p>
+          <p>Status: ${req.status}</p>
+          <button class="btn-approve" onclick="updateStatus(${index}, 'Approved')">Approve</button>
+          <button class="btn-decline" onclick="updateStatus(${index}, 'Declined')">Decline</button>
+        `;
+        container.appendChild(box);
+      });
+    }
+
+    function updateStatus(index, status) {
+      requests[index].status = status;
+      renderRequests();
+    }
+  </script>
+</body>
+</html>
